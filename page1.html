@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Subpage</title>
+</head>
+<body>
+    <header>
+        <h1>Subpage</h1>
+    </header>
+    
+    <nav>
+        <ul>
+            <li><a href="index.html">Home</a></li>
+            <li><a href="page1.html">Page 1</a></li>
+            <li><a href="page2.html">Page 2</a></li>
+        </ul>
+    </nav>
+
+    <main>
+        <h2>Subpage Content</h2>
+        <p>This is the content of the subpage.</p>
+
+        <script>
+
+            const tf = require('@tensorflow/tfjs');
+            const speechCommands = require('@tensorflow-models/speech-commands');
+
+            // When calling `create()`, you must provide the type of the audio input.
+            // The two available options are `BROWSER_FFT` and `SOFT_FFT`.
+            // - BROWSER_FFT uses the browser's native Fourier transform.
+            // - SOFT_FFT uses JavaScript implementations of Fourier transform
+            //   (not implemented yet).
+            const recognizer = speechCommands.create('BROWSER_FFT');
+
+            // Make sure that the underlying model and metadata are loaded via HTTPS
+            // requests.
+            recognizer.ensureModelLoaded();
+
+            // See the array of words that the recognizer is trained to recognize.
+            console.log(recognizer.wordLabels());
+
+            // `listen()` takes two arguments:
+            // 1. A callback function that is invoked anytime a word is recognized.
+            // 2. A configuration object with adjustable fields such a
+            //    - includeSpectrogram
+            //    - probabilityThreshold
+            //    - includeEmbedding
+            recognizer.listen(result => {
+            // - result.scores contains the probability scores that correspond to
+            //   recognizer.wordLabels().
+            // - result.spectrogram contains the spectrogram of the recognized word.
+            }, {
+            includeSpectrogram: true,
+            probabilityThreshold: 0.75
+            });
+            console.log(result.scores)
+            console.log(recognizer.wordLabels())
+
+            // Stop the recognition in 10 seconds.
+            setTimeout(() => recognizer.stopListening(), 10e3);
+        </script>
+    </main>
+
+    <footer>
+        <p>&copy; 2023 Subpage</p>
+    </footer>
+</body>
+</html>
+
