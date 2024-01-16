@@ -15,6 +15,7 @@ const numberWords = [
   'nine',
 ];
 
+// individual thresholds for recognition
 const numberThresholds = {
   zero: 0.99,
   one: 0.99,
@@ -28,7 +29,7 @@ const numberThresholds = {
   nine: 0.99,
 };
 function showPopup(number) {
-  const pageText = number === 0 ? 'Home' : `Page ${number}`; // Adjust the text for 'zero'
+  const pageText = number === 0 ? 'Home' : `Page ${number}`;
   document.getElementById('popupMessage').textContent = `Do you want
 to navigate to ${pageText}?`;
   document.getElementById('customPopup').style.display = 'block';
@@ -38,7 +39,7 @@ function confirmNavigation(shouldNavigate) {
   document.getElementById('customPopup').style.display = 'none';
   if (shouldNavigate) {
     const page =
-      lastRecognizedNumber === 0 ? 'home' : `page${lastRecognizedNumber}`; // Adjust the target page for 'zero'
+      lastRecognizedNumber === 0 ? 'home' : `page${lastRecognizedNumber}`;
     console.log(lastRecognizedNumber);
     console.log('Navigating to ${page}.html');
     window.location.href = `${page}.html`;
@@ -69,7 +70,7 @@ toggleButton.addEventListener('click', async () => {
     try {
       recognizer.listen(
         (result) => {
-          const scores = Array.from(result.scores); // Convert scores to a regular array
+          const scores = Array.from(result.scores);
           const labels = recognizer.wordLabels();
           const labelsToIgnore = ['go', 'left', 'right', 'up', 'down'];
 
@@ -119,7 +120,7 @@ toggleButton.addEventListener('click', async () => {
         },
         {
           includeSpectrogram: true,
-          probabilityThreshold: 0.9, // Consider lowering this if necessary
+          probabilityThreshold: 0.95, //general threshold
         }
       );
       listening = true;
