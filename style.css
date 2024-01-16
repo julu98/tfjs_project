@@ -1,0 +1,140 @@
+.popup {
+  display: none;
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 2;
+}
+
+.popup-content {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: white;
+  padding: 20px;
+  border-radius: 5px;
+  text-align: center;
+}
+
+/* Styles for the infobox */
+body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  font-family: "Arial", sans-serif;
+}
+
+nav ul {
+  display: flex;
+  list-style-type: none;
+  padding: 0;
+}
+
+nav li {
+  padding: 10px;
+  margin: 5px;
+  background-color: #eaeaea;
+  border-radius: 5px;
+}
+
+main {
+  max-width: 800px;
+  margin: 20px;
+}
+
+body {
+  color: #333; /* Dark grey text */
+  background-color: #f4f4f4; /* Light grey background */
+}
+
+h1,
+h2 {
+  font-weight: 300; /* Lighter font-weight */
+}
+
+a {
+  color: #007bff; /* Bootstrap default blue for links */
+  text-decoration: none; /* No underlines on links */
+}
+
+a:hover {
+  text-decoration: underline; /* Underline on hover for better UX */
+}
+
+button {
+  background-color: #007bff; /* Bootstrap default blue */
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #0056b3; /* A darker shade of blue for hover */
+}
+
+@media (max-width: 768px) {
+  nav ul {
+    flex-direction: column;
+    align-items: center;
+  }
+}
+
+.info-box {
+  background-color: #ffffff; /* Use a clean white background */
+  border-left: 5px solid #007bff; /* Add a blue accent border on the left */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Soft shadow for depth */
+  margin: 20px 0; /* Add some margin for spacing */
+  padding: 20px; /* Padding for content inside the box */
+  border-radius: 8px; /* Rounded corners for a modern look */
+}
+
+/* Additional styles for responsive typography and spacing */
+.info-box h2 {
+  color: #333;
+  font-size: 18px; /* Slightly larger font size for headings */
+  margin-bottom: 15px; /* More space below the heading */
+}
+
+.info-box p,
+.info-box ul {
+  color: #666;
+  font-size: 16px; /* Larger font size for better readability */
+  line-height: 1.6; /* Increase line height for better readability */
+}
+
+.info-box ul {
+  list-style: inside; /* Bullets inside to save horizontal space */
+}
+
+/* Placeholder Content Styles */
+#content-placeholder {
+  max-width: 800px; /* Matches the width of your speech command section */
+  width: 100%; /* Ensures it responds to the size of the container */
+  box-sizing: border-box; /* Makes sure padding is included in the width */
+  padding: 20px; /* Adds some padding inside the placeholder */
+  margin-bottom: 40px; /* Adds some space below the placeholder content */
+  background-color: #ffffff; /* White background */
+  border: 1px solid #eaeaea; /* Light border for definition */
+  border-radius: 8px; /* Rounded corners */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Soft shadow for depth */
+}
+
+#content-placeholder h2 {
+  color: #333;
+  font-size: 24px; /* Larger font size for main content titles */
+  margin-bottom: 20px; /* Greater space below the title for separation */
+}
+
+#content-placeholder p {
+  color: #666;
+  font-size: 16px; /* Consistent font size with the infobox */
+  line-height: 1.6; /* Consistent line height for readability */
+  margin-bottom: 10px; /* Space after paragraphs */
+}
