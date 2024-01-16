@@ -4,11 +4,10 @@
     <title>My Basic Website</title>
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/speech-commands"></script>
-    <link rel="stylesheet" type="text/css" href="style.css" />
   </head>
   <body>
     <header>
-      <h1>Speech recognition prototype</h1>
+      <h1>Welcome to My Website</h1>
     </header>
 
     <nav>
@@ -22,30 +21,20 @@
         <li><a href="page7.html">Page 7</a></li>
         <li><a href="page8.html">Page 8</a></li>
         <li><a href="page9.html">Page 9</a></li>
+        <li><a href="page10.html">Page 10</a></li>
       </ul>
     </nav>
 
-    <div id="customPopup" class="popup">
-      <div class="popup-content">
-        <p id="popupMessage">Do you want to navigate to Page X?</p>
-        <button onclick="confirmNavigation(true)">Yes</button>
-        <button onclick="confirmNavigation(false)">No</button>
-      </div>
-    </div>
-
-    <section id="content-placeholder">
-      <h2>Content Placeholder</h2>
-      <p>
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus lacinia
-        odio vitae vestibulum. Pellentesque in ipsum id orci porta dapibus.
-        Curabitur non nulla sit amet nisl tempus convallis quis ac lectus.
-      </p>
-      <!-- You can add more paragraphs, images, or other content as placeholders here -->
-    </section>
-
     <main>
-      <h1>Speech Command Recognition</h1>
-      <button id="toggleRecognition">Start Recognition</button>
+      <h1>Audio Recorder</h1>
+      <audio controls></audio>
+      <button id="toggleRecording" onclick="toggleAudioRecording()">
+        Start Recording
+      </button>
+
+      <button id="playRecording" style="margin-top: 10px" disabled>
+        Play Recording
+      </button>
 
       <div id="classificationResult" style="margin-top: 20px">
         <h2>Classification Result:</h2>
@@ -54,147 +43,202 @@
 
       <script>
         let recognizer;
-        let listening = false;
-        let lastRecognizedNumber = null;
+        const playRecordingButton = document.getElementById("playRecording");
 
-        const numberWords = [
-          "one",
-          "two",
-          "three",
-          "four",
-          "five",
-          "six",
-          "seven",
-          "eight",
-          "nine",
-        ];
-
-        const numberThresholds = {
-          one: 0.99,
-          two: 0.99,
-          three: 0.95,
-          four: 0.999,
-          five: 0.99,
-          six: 0.99,
-          seven: 0.99,
-          eight: 0.99,
-          nine: 0.99,
-        };
-
-        function showPopup(number) {
-          document.getElementById(
-            "popupMessage"
-          ).textContent = `Do you want to navigate to Page ${number}?`;
-          document.getElementById("customPopup").style.display = "block";
-        }
-
-        function confirmNavigation(shouldNavigate) {
-          document.getElementById("customPopup").style.display = "none";
-          if (shouldNavigate && lastRecognizedNumber !== null) {
-            window.location.href = `page${lastRecognizedNumber}.html`;
-          }
-        }
-
-        async function initializeRecognizer() {
-          recognizer = await speechCommands.create("BROWSER_FFT");
-          await recognizer.ensureModelLoaded();
-          console.log(recognizer.wordLabels());
-        }
-
-        const toggleButton = document.getElementById("toggleRecognition");
-
-        toggleButton.addEventListener("click", async () => {
+        // Function to load the model
+        async function loadModel() {
           if (!recognizer) {
-            await initializeRecognizer();
+            recognizer = await speechCommands.create("BROWSER_FFT");
+            await recognizer.ensureModelLoaded();
+            console.log("Speech command model loaded.");
           }
+        }
 
-          toggleButton.disabled = true;
+        window.onload = loadModel;
 
-          if (listening) {
-            recognizer.stopListening();
-            listening = false;
-            toggleButton.textContent = "Start Recognition";
-            toggleButton.disabled = false;
+        const audioChunks = [];
+        let mediaRecorder;
+        let audioContext;
+        let recording = false;
+
+        const toggleRecordingButton =
+          document.getElementById("toggleRecording");
+        const audioElement = document.querySelector("audio");
+
+        function toggleAudioRecording() {
+          if (recording) {
+            // Stop recording
+            mediaRecorder.stop();
+            recording = false;
+            toggleRecordingButton.textContent = "Start Recording";
           } else {
-            try {
-              recognizer.listen(
-                (result) => {
-                  const scores = Array.from(result.scores); // Convert scores to a regular array
-                  const labels = recognizer.wordLabels();
-                  const labelsToIgnore = ["go", "left", "right", "up", "down"];
+            // Start recording
+            audioChunks.length = 0;
+            audioContext = new (window.AudioContext ||
+              window.webkitAudioContext)();
+            navigator.mediaDevices
+              .getUserMedia({ audio: true })
+              .then(function (stream) {
+                mediaRecorder = new MediaRecorder(stream);
 
-                  // Create an array of label-score pairs
-                  let labelScorePairs = scores.map((score, index) => ({
-                    label: labels[index],
-                    score: score,
-                  }));
+                mediaRecorder.ondataavailable = (event) => {
+                  if (event.data.size > 0) {
+                    audioChunks.push(event.data);
+                  }
+                };
 
-                  // Filter out the ignored labels
-                  labelScorePairs = labelScorePairs.filter(
-                    (pair) => !labelsToIgnore.includes(pair.label)
+                mediaRecorder.onstop = async () => {
+                  console.log("Recorder stopped, processing the audio");
+                  const audioBlob = new Blob(audioChunks, {
+                    type: "audio/wav",
+                  });
+
+                  const audioUrl = URL.createObjectURL(audioBlob);
+
+                  audioElement.src = audioUrl;
+                  playRecordingButton.disabled = false;
+                  playRecordingButton.onclick = () => {
+                    audioElement.play();
+                  };
+                  console.log("Play button enabled");
+
+                  if (mediaRecorder.stream) {
+                    mediaRecorder.stream.getTracks().forEach((track) => {
+                      console.log("Stopping track: ", track);
+                      track.stop();
+                    });
+                  }
+
+                  if (!recognizer) {
+                    console.log("Recognizer not loaded.");
+                    return;
+                  }
+
+                  // Convert the audioBlob to a format that the model can process
+                  const mySpectrogramData = await convertAudioToSpectrogram(
+                    audioBlob,
+                    recognizer
+                  );
+                  console.log("Audio converted successfully.");
+
+                  console.log(mySpectrogramData);
+                  const tensor = tf.tensor4d(
+                    mySpectrogramData,
+                    [1, 43, 232, 1]
                   );
 
-                  // Sort the pairs by score in descending order
-                  labelScorePairs.sort((a, b) => b.score - a.score);
+                  console.log("tensor created successfully.");
 
-                  // Process the highest scoring label
-                  if (labelScorePairs.length > 0) {
-                    const highestPair = labelScorePairs[0];
-                    const highestLabel = highestPair.label;
-                    const highestScore = highestPair.score;
+                  const output = await recognizer.recognize(tensor);
 
-                    document.getElementById(
-                      "resultText"
-                    ).textContent = `Most probable class: ${highestLabel}, Probability: ${highestScore}`;
+                  console.log(output.scores);
 
-                    // Check if the highest label meets its individual threshold
-                    if (
-                      numberWords.includes(highestLabel) &&
-                      highestScore >= (numberThresholds[highestLabel] || 0.75)
-                    ) {
-                      lastRecognizedNumber =
-                        numberWords.indexOf(highestLabel) + 1;
-                      showPopup(lastRecognizedNumber);
-                    } else if (
-                      highestLabel === "yes" &&
-                      lastRecognizedNumber !== null
-                    ) {
-                      confirmNavigation(true);
-                    } else if (highestLabel === "no") {
-                      confirmNavigation(false);
-                    }
-                  }
-                },
-                {
-                  includeSpectrogram: true,
-                  probabilityThreshold: 0.75, // Consider lowering this if necessary
-                }
-              );
+                  // Find the label with the highest probability
+                  const scores = output.scores;
+                  const labels = recognizer.wordLabels();
+                  const highestLabelIndex = scores.indexOf(Math.max(...scores));
+                  const highestLabel = labels[highestLabelIndex];
 
-              listening = true;
-              toggleButton.textContent = "Stop Recognition";
-            } catch (error) {
-              console.error("Error in speech recognition: ", error);
-            } finally {
-              toggleButton.disabled = false;
-            }
+                  // Display the result
+                  const resultTextElement =
+                    document.getElementById("resultText");
+                  resultTextElement.textContent = `Most probable class: ${highestLabel}`;
+
+                  tf.dispose([tensor, output]); // Dispose the tensors
+                };
+
+                mediaRecorder.start();
+                recording = true;
+                toggleRecordingButton.textContent = "Stop Recording";
+              })
+              .catch(function (error) {
+                console.error("Error accessing the microphone: " + error);
+              });
           }
-        });
-      </script>
+        }
 
-      <div class="info-box">
-        <h2>How to Use the Recognizer</h2>
-        <p>Follow these steps to use the voice command recognizer:</p>
-        <ul>
-          <li>Click on 'Start Recognition' to enable voice recognition.</li>
-          <li>Say a number between one and ten.</li>
-          <li>
-            If the number is recognized, a popup will ask if you want to
-            navigate to the corresponding page.
-          </li>
-          <li>Say 'yes' to navigate, or 'no' to stay on the current page.</li>
-        </ul>
-      </div>
+        async function convertAudioToSpectrogram(audioBlob, recognizer) {
+          console.log("convertAudioToSpectrogram");
+          const audioBuffer = await decodeAudioData(audioBlob);
+          console.log("audioBuffer");
+          let spectrogram = await generateSpectrogram(
+            audioBuffer,
+            recognizer.params().fftSize
+          );
+          console.log("spectrogram");
+          // Ensure spectrogram has 43 time frames
+          spectrogram = spectrogram.slice(0, 43);
+          while (spectrogram.length < 43) {
+            spectrogram.push(new Array(232).fill(-100)); // Padding with low values
+          }
+
+          // Ensure each frequency array has 232 frequency bins
+          spectrogram = spectrogram.map((freqArray) => {
+            const lengthDiff = 232 - freqArray.length;
+            return lengthDiff > 0
+              ? freqArray.concat(new Array(lengthDiff).fill(-100))
+              : freqArray.slice(0, 232);
+          });
+
+          // Format the spectrogram to be a 4D array: [1, 43, 232, 1]
+          const reshapedSpectrogram = [
+            spectrogram.map((timeFrame) =>
+              timeFrame.map((freqVal) => [freqVal])
+            ),
+          ];
+          return reshapedSpectrogram;
+        }
+
+        async function decodeAudioData(audioBlob) {
+          const audioContext = new (window.AudioContext ||
+            window.webkitAudioContext)();
+          const arrayBuffer = await audioBlob.arrayBuffer();
+          return audioContext.decodeAudioData(arrayBuffer);
+        }
+
+        function generateSpectrogram(audioBuffer, fftSize = 2048) {
+          console.log("generateSpectrogram - Start");
+          return new Promise((resolve, reject) => {
+            const audioContext = new (window.AudioContext ||
+              window.webkitAudioContext)();
+            const analyser = audioContext.createAnalyser();
+            analyser.fftSize = fftSize;
+
+            const bufferLength = analyser.frequencyBinCount;
+            const dataArray = new Float32Array(bufferLength);
+
+            const source = audioContext.createBufferSource();
+            source.buffer = audioBuffer;
+            source.connect(analyser);
+            analyser.connect(audioContext.destination); // Connect analyser to the destination
+
+            const spectrogram = [];
+
+            let frameCount = 0;
+            const maxFrames = 60; // Adjust this based on expected audio duration
+
+            const gatherData = () => {
+              console.log("Gathering data...");
+              analyser.getFloatFrequencyData(dataArray);
+              spectrogram.push([...dataArray]);
+              frameCount++;
+
+              if (frameCount < maxFrames) {
+                requestAnimationFrame(gatherData);
+              } else {
+                console.log("Stopping data collection");
+                source.stop();
+                audioContext.close();
+                resolve(spectrogram);
+              }
+            };
+
+            console.log("Starting audio source");
+            source.start();
+            gatherData();
+          });
+        }
+      </script>
     </main>
   </body>
 </html>
