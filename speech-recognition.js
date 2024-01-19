@@ -103,7 +103,7 @@ toggleButton.addEventListener('click', async () => {
             // Check if the highest label meets its individual threshold
             if (
               numberWords.includes(highestLabel) &&
-              highestScore >= (numberThresholds[highestLabel] || 0.75)
+              highestScore >= (numberThresholds[highestLabel])
             ) {
               lastRecognizedNumber = numberWords.indexOf(highestLabel);
               showPopup(lastRecognizedNumber);
